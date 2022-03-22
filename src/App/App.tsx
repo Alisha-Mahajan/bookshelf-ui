@@ -11,13 +11,12 @@ import {
 } from '../components';
 import PrivateRoute from '../core/PrivateRoute';
 import {IAppContext, RootReducer} from '../reducers';
-import {refresh, useAppDispatch, useAppSelector} from '../redux';
+import {AuthThunks, useAppDispatch, useAppSelector} from '../redux';
 import {Overlay} from '../shared/components';
 import styles from './App.module.scss';
 
 const initialAppState: IAppContext = {
   searchText: '',
-  books: [],
   cartItems: [],
 };
 
@@ -63,7 +62,7 @@ function App() {
   );
 
   useEffect(() => {
-    dispatch(refresh());
+    dispatch(AuthThunks.refresh());
   }, []);
 
   return (

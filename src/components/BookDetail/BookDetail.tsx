@@ -12,13 +12,15 @@ import {
   Typography,
 } from '@mui/material';
 import {Fragment, useContext, useEffect, useState} from 'react';
-import {useLocation, useNavigate, useParams} from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
+import {toast} from 'react-toastify';
 
 import {AppContext} from '../../App/App';
 import noReviews from '../../assets/no-reviews.svg';
 import axios from '../../core/axios';
 import environment from '../../Environment/environment';
-import {useAppSelector} from '../../redux';
+import {BookThunks, useAppDispatch, useAppSelector} from '../../redux';
+import {bookSelectors} from '../../redux/slices';
 import {
   MemoizedRatingBox,
   Overlay,
@@ -32,16 +34,20 @@ import {
   APP_ACTIONS,
   HTML_SPECIAL_CHARS,
 } from '../../shared/immutables';
-import {Book, CartItem, ChartRating, Review} from '../../shared/models';
+import {CartItem, ChartRating, Review} from '../../shared/models';
 import RatingPopup from '../RatingPopup/RatingPopup';
 import styles from './BookDetail.module.scss';
 
 const BookDetail = () => {
   const {id} = useParams();
-  const location = useLocation();
   const navigate = useNavigate();
 
-  const [book, setBook] = useState(location.state?.book);
+  const dispatch = useAppDispatch();
+  const book = useAppSelector(state =>
+    bookSelectors.selectById(state.book, id),
+  );
+  const isLoaded = useAppSelector(state => state.book.isLoaded);
+
   const [details, setDetails] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [showLoader, setShowLoader] = useState(false);
@@ -63,8 +69,12 @@ const BookDetail = () => {
   }));
 
   useEffect(() => {
-    getBookDetails();
-    getBookReviews();
+    if (isLoaded && !book) {
+      toast.error('Invalid book id refrenced');
+    } else {
+      getBookDetails();
+      getBookReviews();
+    }
   }, [id]);
 
   useEffect(() => {
@@ -78,20 +88,15 @@ const BookDetail = () => {
     setInCart(isPresent);
   }, [appState.cartItems]);
 
+  useEffect(() => {
+    if (book) {
+      createBookDetails(book);
+    }
+  }, [book]);
+
   function getBookDetails() {
     if (!book) {
-      axios
-        .get(`${environment.API_URL}/book/${id}`)
-        .then(({data}) => {
-          setBook(data);
-          createBookDetails(data);
-        })
-        .catch(error => {
-          console.error(error);
-          navigate('/');
-        });
-    } else {
-      createBookDetails(book);
+      dispatch(BookThunks.getBookById(id));
     }
   }
 
@@ -234,7 +239,7 @@ const BookDetail = () => {
             </div>
             <div className={styles.buttons}>
               <AddToCartButton
-                disabled={!!currentUser || !book.quantity}
+                disabled={!currentUser || !book.quantity}
                 variant="contained"
                 startIcon={<AddShoppingCartIcon />}
                 loading={cartLoading}
@@ -245,7 +250,7 @@ const BookDetail = () => {
                 {inCart ? 'GO TO CART' : 'ADD TO CART'}
               </AddToCartButton>
               <Button
-                disabled={!!currentUser || !book.quantity}
+                disabled={!currentUser || !book.quantity}
                 variant="contained"
                 startIcon={<ShoppingBasketOutlinedIcon />}
                 onClick={buyBook}

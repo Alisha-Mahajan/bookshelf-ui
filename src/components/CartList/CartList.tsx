@@ -6,18 +6,29 @@ import {AppContext} from '../../App/App';
 import emptyCart from '../../assets/empty-cart.jpeg';
 import axios from '../../core/axios';
 import environment from '../../Environment/environment';
+import {CartThunks, useAppDispatch, useAppSelector} from '../../redux';
+import {cartSelectors} from '../../redux/slices';
 import {BookCartTile} from '../../shared/components';
 import {OrderTypes} from '../../shared/enums';
-import {APP_ACTIONS, DASHBOARD_ROUTE} from '../../shared/immutables';
+import {APP_ACTIONS} from '../../shared/immutables';
 import styles from './CartList.module.scss';
 
 const CartList = () => {
   const navigate = useNavigate();
+  const cartItems = useAppSelector(state =>
+    cartSelectors.selectAll(state.cart),
+  );
+  const isLoaded = useAppSelector(state => state.cart.isLoaded);
+  const dispatch = useAppDispatch();
 
-  const {
-    appState: {cartItems},
-    dispatchAppAction,
-  } = useContext(AppContext);
+  useEffect(() => {
+    if (!isLoaded) {
+      dispatch(CartThunks.getCartItems);
+    }
+    console.log(cartItems);
+  }, []);
+
+  const {dispatchAppAction} = useContext(AppContext);
 
   const qtyUpdate = (id, value) => {
     const orderDetails = [];
@@ -61,22 +72,22 @@ const CartList = () => {
           component={Link}
           to="/"
           aria-label="shop more"
-          variant={cartItems.length ? 'outlined' : 'contained'}
+          variant={cartItems?.length ? 'outlined' : 'contained'}
         >
           CONTINUE SHOPPING
         </Button>
-        <div className={styles.title}>My Cart ({cartItems.length})</div>
+        <div className={styles.title}>My Cart ({cartItems?.length ?? 0})</div>
         <Button
           variant="contained"
           onClick={checkout}
           aria-label="checkout"
-          disabled={!cartItems.length}
+          disabled={!cartItems?.length}
         >
           PROCEED TO CHECKOUT
         </Button>
       </div>
       <Divider />
-      {cartItems.length ? (
+      {cartItems?.length ? (
         cartItems.map(item => (
           <div key={item.id}>
             <BookCartTile

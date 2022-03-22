@@ -3,7 +3,6 @@ import {Book, CartItem} from '../shared/models';
 
 export interface IAppContext {
   searchText: string;
-  books: Book[];
   cartItems: Partial<CartItem>[];
 }
 
@@ -19,9 +18,6 @@ export const RootReducer = (
       break;
     case APP_ACTIONS.UPDATE_USER_INFO:
       // newState.user = {...newState.user, ...data};
-      break;
-    case APP_ACTIONS.SET_BOOKS:
-      newState.books = [...data];
       break;
     case APP_ACTIONS.UPDATE_ADDRESS:
       // if (!!newState.user) {

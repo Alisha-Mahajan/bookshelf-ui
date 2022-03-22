@@ -1,10 +1,17 @@
 import {AnyAction, combineReducers, configureStore} from '@reduxjs/toolkit';
 
-import {authReducer, loadingReducer} from './slices';
+import {
+  authReducer,
+  bookReducer,
+  cartReduxReducer,
+  loadingReducer,
+} from './slices';
 
 const combineReducer = combineReducers({
-  generic: loadingReducer,
+  // generic: loadingReducer,
   auth: authReducer,
+  cart: cartReduxReducer,
+  book: bookReducer,
 });
 
 const rootReducer = (state, action: AnyAction) => {

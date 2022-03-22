@@ -7,21 +7,22 @@ import {AnyObject} from 'yup/lib/types';
 
 import appAxios from '../../core/axios';
 import environment from '../../Environment/environment';
-import {User} from '../../shared/models';
-import {TokenService} from '../../shared/services/auth.service';
+import {User, UserAddress} from '../../shared/models';
+import {TokenService} from '../../shared/services';
 import {AuthCreds} from '../../shared/types';
 import {authActions} from '../slices';
+import {CartThunks} from './cart.thunk';
 
 export const me = createAsyncThunk(
   'auth/me',
-  async (_, {fulfillWithValue, rejectWithValue}) => {
-    return (
-      appAxios
-        .get(`${environment.API_URL}/me`)
-        // TODO alisha: fetch cart count too
-        .then(({data}) => fulfillWithValue(data as User))
-        .catch(error => rejectWithValue(error))
-    );
+  async (_, {dispatch, fulfillWithValue, rejectWithValue}) => {
+    return appAxios
+      .get(`${environment.API_URL}/me`)
+      .then(({data}) => {
+        dispatch(CartThunks.getCartItems());
+        return fulfillWithValue(data as User);
+      })
+      .catch(error => rejectWithValue(error));
   },
 );
 
@@ -128,4 +129,30 @@ export const refresh = createAsyncThunk(
   },
 );
 
-export const AuthThunks = {me, login, googleLogin, signUp, refresh};
+export const updateUserInfo = createAsyncThunk(
+  'auth/userInfo',
+  async (payload: AnyObject, {dispatch, fulfillWithValue, rejectWithValue}) => {
+    return new Promise((resolve, reject) => {
+      appAxios
+        .post(`${environment.API_URL}/me`, payload)
+        .then(() => {
+          const address = new UserAddress(payload);
+          const user = {
+            username: payload.username,
+            addresses: [address],
+          };
+          resolve(fulfillWithValue(user) as any);
+        })
+        .catch(err => reject(rejectWithValue(err) as any));
+    });
+  },
+);
+
+export const AuthThunks = {
+  me,
+  login,
+  googleLogin,
+  signUp,
+  refresh,
+  updateUserInfo,
+};

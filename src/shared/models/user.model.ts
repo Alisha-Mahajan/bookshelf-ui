@@ -19,10 +19,12 @@ export class User {
   _id: string;
   isSuperAdmin: boolean;
   username: string;
+  email: string;
 
   addresses: UserAddress[];
   constructor(data: Partial<User> = {}) {
     this._id = data._id;
+    this.email = data.email;
     this.isSuperAdmin = data.isSuperAdmin;
     this.username = data.username;
     this.addresses = data.addresses.reduce((acc, address) => {

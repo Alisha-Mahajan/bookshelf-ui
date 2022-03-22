@@ -3,7 +3,7 @@ import {toast} from 'react-toastify';
 import {AnyObject} from 'yup/lib/types';
 import {UserEntryState} from '../../components/UserEntry';
 import {User} from '../../shared/models';
-import {TokenService} from '../../shared/services/auth.service';
+import {TokenService} from '../../shared/services';
 
 import {RootState} from '../store';
 import {AuthThunks} from '../thunks';
@@ -42,9 +42,16 @@ export const authSlice = createSlice({
     },
   },
   extraReducers: builder =>
-    builder.addCase(AuthThunks.me.fulfilled, (state, {payload}: AnyObject) => {
-      state.user = new User(payload);
-    }),
+    builder
+      .addCase(AuthThunks.me.fulfilled, (state, {payload}: AnyObject) => {
+        state.user = new User(payload);
+      })
+      .addCase(
+        AuthThunks.updateUserInfo.fulfilled,
+        (state, action: PayloadAction<any>) => {
+          state.user = {...state.user, ...action.payload};
+        },
+      ),
 });
 
 export const authReducer = authSlice.reducer;

@@ -115,9 +115,7 @@ const Cart = () => {
               <div className={styles.borderLayoutBox}>
                 <div>
                   Order confirmation will be sent to:{' '}
-                  <span className={styles.boldText}>
-                    {appState.user?.email}
-                  </span>
+                  <span className={styles.boldText}>{currentUser?.email}</span>
                 </div>
                 <Button
                   variant="contained"
