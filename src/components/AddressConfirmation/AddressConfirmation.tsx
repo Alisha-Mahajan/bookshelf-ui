@@ -12,6 +12,7 @@ import {object, string} from 'yup';
 import {AppContext} from '../../App/App';
 import axios from '../../core/axios';
 import environment from '../../Environment/environment';
+import {useAppSelector} from '../../redux';
 import {APP_ACTIONS} from '../../shared/immutables';
 import styles from './AddressConfirmation.module.scss';
 
@@ -28,14 +29,14 @@ function AddressConfirmation({handleDelivery}) {
 
   const navigate = useNavigate();
 
-  const {appState, dispatchAppAction} = useContext(AppContext);
+  const {dispatchAppAction} = useContext(AppContext);
+  const currentUser = useAppSelector(state => state.auth.user);
   useEffect(() => {
     getUserAddress();
-  }, [appState]);
+  }, []);
 
   function getUserAddress() {
-    const user = appState.user ?? {};
-    const addresses = user.addresses ?? [];
+    const addresses = currentUser?.addresses ?? [];
     const primaryAdd =
       addresses.find(address => !!address?.default) ?? addresses[0];
     setHasAddress(!!primaryAdd);

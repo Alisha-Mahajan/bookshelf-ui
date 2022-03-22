@@ -2,13 +2,13 @@ import SendIcon from '@mui/icons-material/Send';
 import {Button, Rating, TextField} from '@mui/material';
 import MuiAlert, {AlertProps} from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
-import {forwardRef, useContext, useEffect, useState} from 'react';
+import {forwardRef, useEffect, useState} from 'react';
 import {AnyObject} from 'yup/lib/types';
 
-import {AppContext} from '../../App/App';
 import info from '../../assets/info.png';
 import axios from '../../core/axios';
 import environment from '../../Environment/environment';
+import {useAppSelector} from '../../redux';
 import {GenericDialog} from '../../shared/components';
 import styles from './RatingPopup.module.scss';
 
@@ -35,8 +35,8 @@ function RatingPopup({open, handleDialogClose, bookId}) {
     handleDialogClose(true);
   };
 
-  const {appState} = useContext(AppContext);
-  const {isUserLoggedIn} = appState;
+  const currentUser = useAppSelector(state => state.auth.user);
+
   const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
     props,
     ref,
@@ -46,7 +46,7 @@ function RatingPopup({open, handleDialogClose, bookId}) {
 
   useEffect(() => {
     setSnackBarOpen(false);
-    if (isUserLoggedIn) {
+    if (!!currentUser) {
       axios
         .post(`${environment.API_URL}/reviews/user/${bookId}`)
         .then((success: AnyObject) => {
@@ -54,7 +54,7 @@ function RatingPopup({open, handleDialogClose, bookId}) {
         })
         .catch(error => console.error(error));
     }
-  }, [isUserLoggedIn]);
+  }, [currentUser]);
 
   const handleSubmit = () => {
     setSubmitting(true);
@@ -129,7 +129,7 @@ function RatingPopup({open, handleDialogClose, bookId}) {
         <div className={styles.ratingDialog}>
           <img className={styles.noReview} src={info} alt="Info" />
           <div className={styles.msg}>
-            {isUserLoggedIn
+            {!!currentUser
               ? "Sorry! You are not allowed to review this product since you haven't bought it on Bookshelf"
               : 'Please login to give review!!'}
           </div>

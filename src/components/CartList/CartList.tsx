@@ -15,7 +15,7 @@ const CartList = () => {
   const navigate = useNavigate();
 
   const {
-    appState: {cartItems, isUserLoggedIn},
+    appState: {cartItems},
     dispatchAppAction,
   } = useContext(AppContext);
 

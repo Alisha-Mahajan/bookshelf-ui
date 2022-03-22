@@ -10,6 +10,7 @@ import {useLocation, useNavigate} from 'react-router-dom';
 
 import {AppContext} from '../../App/App';
 import {CartReducer, ICartContext} from '../../reducers';
+import {useAppSelector} from '../../redux';
 import {BookCartTile} from '../../shared/components';
 import {CART_ACTIONS} from '../../shared/immutables';
 import AddressConfirmation from '../AddressConfirmation/AddressConfirmation';
@@ -24,6 +25,7 @@ const Cart = () => {
   const navigate = useNavigate();
 
   const {appState} = useContext(AppContext);
+  const currentUser = useAppSelector(state => state.auth.user);
   const initialState: ICartContext = {
     products: location.state.cartItems,
     totalPrice: 0,
@@ -58,14 +60,14 @@ const Cart = () => {
   const [address, setAddress] = useState(null);
 
   useEffect(() => {
-    const addresses = appState.user?.addresses ?? [];
+    const addresses = currentUser?.addresses ?? [];
     const primaryAdd =
       addresses.find(address => !!address?.default) ?? addresses[0];
     if (!!primaryAdd) {
       const locationAdd = `${primaryAdd.addressLine1}, ${primaryAdd.city}, ${primaryAdd.state}, PIN: ${primaryAdd.pincode}`;
       setAddress(locationAdd);
     }
-  }, [appState]);
+  }, []);
 
   const qtyUpdate = (id, value) => {
     dispatchCartActions({

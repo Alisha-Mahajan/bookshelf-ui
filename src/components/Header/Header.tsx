@@ -8,6 +8,7 @@ import {toast} from 'react-toastify';
 
 import {AppContext} from '../../App/App';
 import logo from '../../assets/bookshelf.svg';
+import {useAppSelector} from '../../redux';
 import {APP_ACTIONS, DASHBOARD_ROUTE} from '../../shared/immutables';
 import styles from './Header.module.scss';
 import {UserAccount} from './UserAccount';
@@ -23,6 +24,7 @@ export const Header = () => {
   const {appState, dispatchAppAction} = useContext(AppContext);
   const navigate = useNavigate();
   const location = useLocation();
+  const currentUser = useAppSelector(state => state.auth.user);
 
   const changeInputValue = newValue => {
     dispatchAppAction({type: APP_ACTIONS.UPDATE_SEARCH_TEXT, data: newValue});
@@ -36,7 +38,7 @@ export const Header = () => {
   };
 
   const cartProcessing = () => {
-    if (appState.isUserLoggedIn) {
+    if (!!currentUser) {
       navigate(`/cart`, {
         state: {
           cartItems: appState.cartItems,

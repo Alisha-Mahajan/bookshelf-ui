@@ -1,12 +1,4 @@
-import axios from 'axios';
-import {
-  createContext,
-  lazy,
-  Suspense,
-  useEffect,
-  useReducer,
-  useState,
-} from 'react';
+import {createContext, lazy, Suspense, useEffect, useReducer} from 'react';
 import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 
 import {
@@ -17,21 +9,14 @@ import {
   NotFound,
   UserEntry,
 } from '../components';
-import appAxios from '../core/axios';
 import PrivateRoute from '../core/PrivateRoute';
-import environment from '../Environment/environment';
 import {IAppContext, RootReducer} from '../reducers';
+import {refresh, useAppDispatch, useAppSelector} from '../redux';
 import {Overlay} from '../shared/components';
-import {APP_ACTIONS, REFRESH_TOKEN} from '../shared/immutables';
 import styles from './App.module.scss';
 
 const initialAppState: IAppContext = {
   searchText: '',
-  isUserLoggedIn: true,
-  isSuperAdmin: false,
-  userEntry: null,
-  open: false,
-  user: null,
   books: [],
   cartItems: [],
 };
@@ -44,38 +29,9 @@ function App() {
     initialAppState,
   );
 
-  const [isAdmin, setIsAdmin] = useState(appState.isSuperAdmin);
-
-  useEffect(() => {
-    const refreshToken = localStorage.getItem(REFRESH_TOKEN);
-    if (refreshToken) {
-      axios
-        .post(`${environment.API_URL}/refresh`, {refreshToken})
-        .then(({data}) => {
-          dispatchAppAction({type: APP_ACTIONS.LOGIN, data});
-          updateUserInfo();
-        })
-        .catch(() => dispatchAppAction({type: APP_ACTIONS.LOGOUT}));
-    } else {
-      dispatchAppAction({type: APP_ACTIONS.LOGOUT});
-    }
-  }, []);
-
-  useEffect(() => {
-    setIsAdmin(appState.isSuperAdmin);
-  }, [appState.isSuperAdmin]);
-
-  const updateUserInfo = () => {
-    appAxios
-      .get(`${environment.API_URL}/me`)
-      .then(({data}) => {
-        dispatchAppAction({type: APP_ACTIONS.REGISTER_USER_INFO, data});
-        appAxios.get(`${environment.API_URL}/cart`).then(({data}) => {
-          dispatchAppAction({type: APP_ACTIONS.SET_CART, data});
-        });
-      })
-      .catch(err => console.error(err));
-  };
+  const dispatch = useAppDispatch();
+  const userEntryState = useAppSelector(state => state.auth.userEntryState);
+  const currentUser = useAppSelector(state => state.auth.user);
 
   // admin routes
   const UserList = lazy(() => import('../components/Admin/UserList'));
@@ -106,6 +62,10 @@ function App() {
     () => import('../components/FooterLinks/Payments/Payments'),
   );
 
+  useEffect(() => {
+    dispatch(refresh());
+  }, []);
+
   return (
     <Router>
       <div className={styles.pageContainer}>
@@ -116,9 +76,9 @@ function App() {
               <Routes>
                 <Route
                   path="/"
-                  element={isAdmin ? <AdminHome /> : <Dashboard />}
+                  element={currentUser?.isAdmin ? <AdminHome /> : <Dashboard />}
                 />
-                {isAdmin ? (
+                {currentUser?.isAdmin ? (
                   <>
                     <Route path="/users" element={<UserList />} />
                     <Route path="/books" element={<BookList />} />
@@ -175,9 +135,7 @@ function App() {
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
-            {!!appState.userEntry && (
-              <UserEntry showForm={appState.userEntry} />
-            )}
+            {!!userEntryState && <UserEntry showForm={userEntryState} />}
           </div>
         </AppContext.Provider>
         <Footer />

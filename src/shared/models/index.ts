@@ -4,3 +4,4 @@ export * from './review.model';
 export * from './filter.model';
 export * from './ratingChart.model';
 export * from './CartItem.model';
+export * from './user.model';

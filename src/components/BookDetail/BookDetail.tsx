@@ -18,6 +18,7 @@ import {AppContext} from '../../App/App';
 import noReviews from '../../assets/no-reviews.svg';
 import axios from '../../core/axios';
 import environment from '../../Environment/environment';
+import {useAppSelector} from '../../redux';
 import {
   MemoizedRatingBox,
   Overlay,
@@ -48,6 +49,7 @@ const BookDetail = () => {
   const [inCart, setInCart] = useState(false);
 
   const {appState, dispatchAppAction} = useContext(AppContext);
+  const currentUser = useAppSelector(state => state.auth.user);
 
   const initialChartRating = new ChartRating();
   const [chartRating, setChartRating] = useState(initialChartRating);
@@ -232,7 +234,7 @@ const BookDetail = () => {
             </div>
             <div className={styles.buttons}>
               <AddToCartButton
-                disabled={!appState.isUserLoggedIn || !book.quantity}
+                disabled={!!currentUser || !book.quantity}
                 variant="contained"
                 startIcon={<AddShoppingCartIcon />}
                 loading={cartLoading}
@@ -243,7 +245,7 @@ const BookDetail = () => {
                 {inCart ? 'GO TO CART' : 'ADD TO CART'}
               </AddToCartButton>
               <Button
-                disabled={!appState.isUserLoggedIn || !book.quantity}
+                disabled={!!currentUser || !book.quantity}
                 variant="contained"
                 startIcon={<ShoppingBasketOutlinedIcon />}
                 onClick={buyBook}
