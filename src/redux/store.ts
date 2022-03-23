@@ -3,15 +3,19 @@ import {AnyAction, combineReducers, configureStore} from '@reduxjs/toolkit';
 import {
   authReducer,
   bookReducer,
-  cartReduxReducer,
+  bookReviewReducer,
+  cartReducer,
   loadingReducer,
+  orderReducer,
 } from './slices';
 
 const combineReducer = combineReducers({
-  // generic: loadingReducer,
   auth: authReducer,
-  cart: cartReduxReducer,
   book: bookReducer,
+  bookReview: bookReviewReducer,
+  cart: cartReducer,
+  generic: loadingReducer,
+  order: orderReducer,
 });
 
 const rootReducer = (state, action: AnyAction) => {

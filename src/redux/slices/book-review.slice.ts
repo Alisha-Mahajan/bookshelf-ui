@@ -4,17 +4,16 @@ import {
   PayloadAction,
 } from '@reduxjs/toolkit';
 
-import {Book} from '../../shared/models';
+import {BookReviewStoreModel} from '../../shared/models';
 
-const adapter = createEntityAdapter<Book>({
-  selectId: book => book._id,
+const adapter = createEntityAdapter<BookReviewStoreModel>({
+  selectId: review => review.bookId,
 });
 
-const bookSlice = createSlice({
-  name: 'book',
+const bookReviewSlice = createSlice({
+  name: 'book-review',
   initialState: adapter.getInitialState({
     loading: false,
-    isLoaded: false,
   }),
   reducers: {
     addItems: adapter.addMany,
@@ -29,12 +28,10 @@ const bookSlice = createSlice({
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
-    setLoaded: state => {
-      state.isLoaded = true;
-    },
   },
 });
 
-export const {reducer: bookReducer, actions: bookActions} = bookSlice;
+export const {reducer: bookReviewReducer, actions: bookReviewActions} =
+  bookReviewSlice;
 
-export const bookSelectors = adapter.getSelectors();
+export const bookReviewSelectors = adapter.getSelectors();

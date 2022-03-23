@@ -34,6 +34,6 @@ const cartSlice = createSlice({
   },
 });
 
-export const {reducer: cartReduxReducer, actions: cartActions} = cartSlice;
+export const {reducer: cartReducer, actions: cartActions} = cartSlice;
 
 export const cartSelectors = adapter.getSelectors();

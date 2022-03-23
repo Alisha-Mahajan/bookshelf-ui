@@ -6,7 +6,7 @@ import environment from '../../Environment/environment';
 import {bookActions} from '../slices';
 
 export const getBooks = createAsyncThunk(
-  'books/getItems',
+  'books/getAll',
   async (_, {dispatch, fulfillWithValue, rejectWithValue}) => {
     try {
       dispatch(bookActions.setLoading(true));

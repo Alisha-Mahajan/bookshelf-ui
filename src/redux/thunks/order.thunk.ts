@@ -3,25 +3,25 @@ import {batch} from 'react-redux';
 
 import axios from '../../core/axios';
 import environment from '../../Environment/environment';
-import {cartActions} from '../slices';
+import {orderActions} from '../slices';
 
-export const getCartItems = createAsyncThunk(
-  'cart/getAll',
+export const getOrders = createAsyncThunk(
+  'order/getAll',
   async (_, {dispatch, fulfillWithValue, rejectWithValue}) => {
     try {
-      dispatch(cartActions.setLoading(true));
-      const {data} = await axios.get(`${environment.API_URL}/cart`);
+      dispatch(orderActions.setLoading(true));
+      const {data} = await axios.get(`${environment.API_URL}/orders`);
       batch(() => {
-        dispatch(cartActions.setLoaded());
-        dispatch(cartActions.setItems(data.orderDetails));
+        dispatch(orderActions.setLoaded());
+        dispatch(orderActions.setItems(data.orders));
       });
       return fulfillWithValue(data as any);
     } catch (err) {
       throw rejectWithValue(err);
     } finally {
-      dispatch(cartActions.setLoading(false));
+      dispatch(orderActions.setLoading(false));
     }
   },
 );
 
-export const CartThunks = {getCartItems};
+export const OrderThunks = {getOrders};

@@ -19,8 +19,14 @@ import {AppContext} from '../../App/App';
 import noReviews from '../../assets/no-reviews.svg';
 import axios from '../../core/axios';
 import environment from '../../Environment/environment';
-import {BookThunks, useAppDispatch, useAppSelector} from '../../redux';
-import {bookSelectors} from '../../redux/slices';
+import {
+  bookReviewSelectors,
+  BookReviewThunks,
+  bookSelectors,
+  BookThunks,
+  useAppDispatch,
+  useAppSelector,
+} from '../../redux';
 import {
   MemoizedRatingBox,
   Overlay,
@@ -46,11 +52,15 @@ const BookDetail = () => {
   const book = useAppSelector(state =>
     bookSelectors.selectById(state.book, id),
   );
+  const bookReviews = useAppSelector(state =>
+    bookReviewSelectors.selectById(state.bookReview, id),
+  );
+
   const isLoaded = useAppSelector(state => state.book.isLoaded);
+  const isReviewsLoading = useAppSelector(state => state.bookReview.isLoading);
 
   const [details, setDetails] = useState([]);
   const [reviews, setReviews] = useState([]);
-  const [showLoader, setShowLoader] = useState(false);
   const [cartLoading, setCartLoading] = useState(false);
   const [inCart, setInCart] = useState(false);
 
@@ -72,16 +82,21 @@ const BookDetail = () => {
     if (isLoaded && !book) {
       toast.error('Invalid book id refrenced');
     } else {
-      getBookDetails();
-      getBookReviews();
+      if (!book) {
+        dispatch(BookThunks.getBookById(id));
+      }
+      if (!bookReviews) {
+        dispatch(BookReviewThunks.getBookReviewsById(id));
+      }
     }
   }, [id]);
 
   useEffect(() => {
-    if (reviews.length) {
-      createChartRating();
+    if (bookReviews?.reviews?.length) {
+      setReviews(bookReviews.reviews);
+      createChartRating(bookReviews.reviews);
     }
-  }, [reviews]);
+  }, [bookReviews]);
 
   useEffect(() => {
     const isPresent = appState.cartItems.some(item => item._id === book._id);
@@ -94,33 +109,12 @@ const BookDetail = () => {
     }
   }, [book]);
 
-  function getBookDetails() {
-    if (!book) {
-      dispatch(BookThunks.getBookById(id));
-    }
-  }
-
-  function getBookReviews() {
-    setShowLoader(true);
-    axios
-      .get(`${environment.API_URL}/reviews?bookId=${id}`)
-      .then(({data}) => {
-        const bookReviews = [];
-        data.reviews.forEach(review => {
-          bookReviews.push(new Review(review));
-        });
-        setReviews(bookReviews);
-      })
-      .catch(error => {
-        console.error(error);
-      })
-      .finally(() => setShowLoader(false));
-  }
-
-  function createChartRating() {
+  function createChartRating(reviewData: Review[]) {
     const data = {...chartRating};
     [1, 2, 3, 4, 5].forEach(element => {
-      const length = reviews.filter(review => review.rating === element).length;
+      const length = reviewData.filter(
+        review => review.rating === element,
+      ).length;
       data[`star${element}`] = length;
     });
     setChartRating(data);
@@ -175,7 +169,8 @@ const BookDetail = () => {
   const handleDialogClose = (fetchReviews = false) => {
     setOpen(false);
     if (fetchReviews) {
-      getBookReviews();
+      // TODO alisha: add reviews to store
+      // getBookReviews();
     }
   };
 
@@ -296,14 +291,14 @@ const BookDetail = () => {
               <div className={styles.title}>
                 Rating {HTML_SPECIAL_CHARS.AND} Reviews
               </div>
-              {!showLoader && (
+              {!isReviewsLoading && (
                 <div className={styles.rateBtn} onClick={openRatingDialog}>
                   +
                 </div>
               )}
             </div>
             <Divider />
-            {showLoader ? (
+            {isReviewsLoading ? (
               <div className={styles.loadingReviewContainer}>
                 <Overlay showBackdrop={false} showCircularSpinner={true} />
               </div>
