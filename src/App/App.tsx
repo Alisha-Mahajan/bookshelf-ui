@@ -20,6 +20,7 @@ import PrivateRoute from '../core/PrivateRoute';
 import {IAppContext, RootReducer} from '../reducers';
 import {AuthThunks, useAppDispatch, useAppSelector} from '../redux';
 import {Overlay} from '../shared/components';
+import {TokenService} from '../shared/services';
 import styles from './App.module.scss';
 
 const initialAppState: IAppContext = {
@@ -69,9 +70,12 @@ function App() {
 
   useEffect(() => {
     // added delay as sometimes if refresh fails books call is cancelled
-    setTimeout(() => {
-      dispatch(AuthThunks.refresh());
-    }, 10);
+    const {accessToken, refreshToken} = TokenService.getTokenPayload();
+    if (accessToken && refreshToken) {
+      setTimeout(() => {
+        dispatch(AuthThunks.me());
+      }, 10);
+    }
   }, []);
 
   const [isAdmin, setAdmin] = useState(false);

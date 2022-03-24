@@ -19,7 +19,9 @@ export const me = createAsyncThunk(
     return appAxios
       .get(`${environment.API_URL}/me`)
       .then(({data}) => {
-        dispatch(CartThunks.getCartItems());
+        if (!data.isSuperAdmin) {
+          dispatch(CartThunks.getCartItems());
+        }
         return fulfillWithValue(data as User);
       })
       .catch(error => rejectWithValue(error));

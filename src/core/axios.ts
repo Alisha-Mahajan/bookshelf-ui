@@ -2,6 +2,7 @@ import axios from 'axios';
 import {toast} from 'react-toastify';
 import environment from '../Environment/environment';
 import {ACCESS_TOKEN, REFRESH_TOKEN} from '../shared/immutables';
+import {TokenService} from '../shared/services';
 
 const axiosInstance = axios.create({
   baseURL: '',
@@ -36,21 +37,14 @@ axiosInstance.interceptors.response.use(
         originalConfig._retry = true;
 
         try {
-          // refresh token handling
-          try {
-            const response = await axios.post(
-              `${environment.API_URL}/refresh`,
-              {
-                refreshToken: oldRefreshToken,
-              },
-            );
-            const {token, refreshToken} = response.data;
-            localStorage.setItem(ACCESS_TOKEN, token);
-            localStorage.setItem(REFRESH_TOKEN, refreshToken);
-          } catch (err) {
-            console.log('Error occured while refreshing token: ', error);
-            // do nothing
-          }
+          const response = await axios.post(`${environment.API_URL}/refresh`, {
+            refreshToken: oldRefreshToken,
+          });
+          const {token, refreshToken} = response.data;
+          TokenService.setTokenPayload({
+            token,
+            refreshToken,
+          });
           return axiosInstance(originalConfig);
         } catch (err) {
           return Promise.reject(err);

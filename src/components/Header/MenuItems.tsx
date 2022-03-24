@@ -7,6 +7,7 @@ import {useLocation, useNavigate} from 'react-router-dom';
 
 import {useAppDispatch, useAppSelector} from '../../redux';
 import {authActions} from '../../redux/slices';
+import {DASHBOARD_ROUTE} from '../../shared/immutables';
 import {UserEntryState} from '../UserEntry';
 
 export const MenuItems = () => {
@@ -20,7 +21,7 @@ export const MenuItems = () => {
     {
       id: 0,
       title: 'My Profile',
-      show: currentUser && !currentUser.isAdmin,
+      show: currentUser && !currentUser.isSuperAdmin,
       icon: <AccountCircleIcon fontSize="small" />,
       onClick: () => {
         navigate('/profile');
@@ -52,6 +53,7 @@ export const MenuItems = () => {
       icon: <Logout fontSize="small" />,
       onClick: () => {
         dispatch(authActions.logout());
+        navigate(DASHBOARD_ROUTE);
       },
     },
     {

@@ -67,7 +67,7 @@ export const Header = () => {
             navigate(DASHBOARD_ROUTE);
           }}
         />
-        {!currentUser?.isAdmin && (
+        {!currentUser?.isSuperAdmin && (
           <Box className={styles.searchBar}>
             <SearchBar
               style={{
@@ -81,7 +81,7 @@ export const Header = () => {
         <div className={styles.topRightBanner}>
           <Stack direction="row" alignItems="center" spacing={2}>
             <UserAccount />
-            {!currentUser?.isAdmin && (
+            {!currentUser?.isSuperAdmin && (
               <Badge
                 classes={{badge: classes.badge}}
                 badgeContent={cartCount}
