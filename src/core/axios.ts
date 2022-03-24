@@ -41,7 +41,7 @@ axiosInstance.interceptors.response.use(
             const response = await axios.post(
               `${environment.API_URL}/refresh`,
               {
-                refresh_token: oldRefreshToken,
+                refreshToken: oldRefreshToken,
               },
             );
             const {token, refreshToken} = response.data;
