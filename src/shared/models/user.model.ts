@@ -1,5 +1,5 @@
 export class UserAddress {
-  _id: string;
+  _id?: string;
   default: boolean;
   addressLine1: string;
   city: string;

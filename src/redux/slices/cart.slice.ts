@@ -21,6 +21,7 @@ const cartSlice = createSlice({
     addItem: adapter.addOne,
     setItems: adapter.setMany,
     setItem: adapter.setOne,
+    upsertItem: adapter.upsertOne,
     removeItem: adapter.removeOne,
     addQuantity: adapter.updateOne,
     removeQuantity: adapter.removeOne,

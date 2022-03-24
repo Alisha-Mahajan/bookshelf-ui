@@ -131,7 +131,7 @@ export const refresh = createAsyncThunk(
 
 export const updateUserInfo = createAsyncThunk(
   'auth/userInfo',
-  async (payload: AnyObject, {dispatch, fulfillWithValue, rejectWithValue}) => {
+  async (payload: AnyObject, {fulfillWithValue, rejectWithValue}) => {
     return new Promise((resolve, reject) => {
       appAxios
         .post(`${environment.API_URL}/me`, payload)
@@ -148,6 +148,20 @@ export const updateUserInfo = createAsyncThunk(
   },
 );
 
+export const addUserAddress = createAsyncThunk(
+  'auth/user/add-address',
+  async (address: UserAddress, {fulfillWithValue, rejectWithValue}) => {
+    return new Promise((resolve, reject) => {
+      appAxios
+        .post(`${environment.API_URL}/cart/address`, {address})
+        .then(() => {
+          resolve(fulfillWithValue(address) as any);
+        })
+        .catch(err => reject(rejectWithValue(err) as any));
+    });
+  },
+);
+
 export const AuthThunks = {
   me,
   login,
@@ -155,4 +169,5 @@ export const AuthThunks = {
   signUp,
   refresh,
   updateUserInfo,
+  addUserAddress,
 };

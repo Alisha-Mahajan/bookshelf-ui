@@ -1,16 +1,12 @@
 import {Button, Divider, Paper} from '@mui/material';
-import {useContext, useEffect} from 'react';
+import {useEffect} from 'react';
 import {Link, useNavigate} from 'react-router-dom';
 
-import {AppContext} from '../../App/App';
 import emptyCart from '../../assets/empty-cart.jpeg';
-import axios from '../../core/axios';
-import environment from '../../Environment/environment';
 import {CartThunks, useAppDispatch, useAppSelector} from '../../redux';
 import {cartSelectors} from '../../redux/slices';
-import {BookCartTile} from '../../shared/components';
+import {BookCartTile, Overlay} from '../../shared/components';
 import {OrderTypes} from '../../shared/enums';
-import {APP_ACTIONS} from '../../shared/immutables';
 import styles from './CartList.module.scss';
 
 const CartList = () => {
@@ -19,40 +15,30 @@ const CartList = () => {
     cartSelectors.selectAll(state.cart),
   );
   const isLoaded = useAppSelector(state => state.cart.isLoaded);
+  const isLoading = useAppSelector(state => state.cart.isLoading);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (!isLoaded) {
       dispatch(CartThunks.getCartItems);
     }
-    console.log(cartItems);
   }, []);
-
-  const {dispatchAppAction} = useContext(AppContext);
 
   const qtyUpdate = (id, value) => {
     const orderDetails = [];
     cartItems.forEach(item => {
-      if (item._id === id && value === 0) {
+      if (item.book._id === id && value === 0) {
         // don't add anything to cart Item
       } else {
-        const quantity = item._id === id ? value : item.qtyOrdered;
+        const quantity = item.book._id === id ? value : item.quantity;
         orderDetails.push({
-          bookId: item._id,
+          bookId: item.book._id,
           price: item.price,
           quantity,
         });
       }
     });
-    axios
-      .patch(`${environment.API_URL}/cart`, {orderDetails})
-      .then(() =>
-        dispatchAppAction({
-          type: APP_ACTIONS.UPDATE_CART,
-          data: {id, value},
-        }),
-      )
-      .catch(err => console.log(err));
+    dispatch(CartThunks.updateCartItem({id, orderDetails, value}));
   };
 
   const checkout = () => {
@@ -65,45 +51,53 @@ const CartList = () => {
   };
 
   return (
-    <Paper className={styles.layout} elevation={2}>
-      <div className={styles.header}>
-        <Button
-          className={styles.btn}
-          component={Link}
-          to="/"
-          aria-label="shop more"
-          variant={cartItems?.length ? 'outlined' : 'contained'}
-        >
-          CONTINUE SHOPPING
-        </Button>
-        <div className={styles.title}>My Cart ({cartItems?.length ?? 0})</div>
-        <Button
-          variant="contained"
-          onClick={checkout}
-          aria-label="checkout"
-          disabled={!cartItems?.length}
-        >
-          PROCEED TO CHECKOUT
-        </Button>
-      </div>
-      <Divider />
-      {cartItems?.length ? (
-        cartItems.map(item => (
-          <div key={item.id}>
-            <BookCartTile
-              item={item}
-              qtyUpdate={(id, value) => qtyUpdate(id, value)}
-              showDelete={true}
-            />
-          </div>
-        ))
+    <>
+      {!isLoaded || isLoading ? (
+        <Overlay showBackdrop={true} />
       ) : (
-        <div className={styles.emptyCart}>
-          <img src={emptyCart} alt="empty-cart" className={styles.image} />
-          <div className={styles.msg}>Your cart is currently empty</div>
-        </div>
+        <Paper className={styles.layout} elevation={2}>
+          <div className={styles.header}>
+            <Button
+              className={styles.btn}
+              component={Link}
+              to="/"
+              aria-label="shop more"
+              variant={cartItems?.length ? 'outlined' : 'contained'}
+            >
+              CONTINUE SHOPPING
+            </Button>
+            <div className={styles.title}>
+              My Cart ({cartItems?.length ?? 0})
+            </div>
+            <Button
+              variant="contained"
+              onClick={checkout}
+              aria-label="checkout"
+              disabled={!cartItems?.length}
+            >
+              PROCEED TO CHECKOUT
+            </Button>
+          </div>
+          <Divider />
+          {cartItems?.length ? (
+            cartItems.map(cartItem => (
+              <div key={cartItem.book._id}>
+                <BookCartTile
+                  item={cartItem}
+                  qtyUpdate={(id, value) => qtyUpdate(id, value)}
+                  showDelete={true}
+                />
+              </div>
+            ))
+          ) : (
+            <div className={styles.emptyCart}>
+              <img src={emptyCart} alt="empty-cart" className={styles.image} />
+              <div className={styles.msg}>Your cart is currently empty</div>
+            </div>
+          )}
+        </Paper>
       )}
-    </Paper>
+    </>
   );
 };
 

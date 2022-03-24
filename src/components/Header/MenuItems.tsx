@@ -52,7 +52,6 @@ export const MenuItems = () => {
       icon: <Logout fontSize="small" />,
       onClick: () => {
         dispatch(authActions.logout());
-        // TODO ALISHA: clear cart is pending
       },
     },
     {

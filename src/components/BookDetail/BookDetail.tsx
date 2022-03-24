@@ -24,6 +24,8 @@ import {
   BookReviewThunks,
   bookSelectors,
   BookThunks,
+  cartSelectors,
+  CartThunks,
   useAppDispatch,
   useAppSelector,
 } from '../../redux';
@@ -64,8 +66,11 @@ const BookDetail = () => {
   const [cartLoading, setCartLoading] = useState(false);
   const [inCart, setInCart] = useState(false);
 
-  const {appState, dispatchAppAction} = useContext(AppContext);
   const currentUser = useAppSelector(state => state.auth.user);
+  const isCartLoaded = useAppSelector(state => state.cart.isLoaded);
+  const cartItems = useAppSelector(state =>
+    cartSelectors.selectAll(state.cart),
+  );
 
   const initialChartRating = new ChartRating();
   const [chartRating, setChartRating] = useState(initialChartRating);
@@ -99,9 +104,15 @@ const BookDetail = () => {
   }, [bookReviews]);
 
   useEffect(() => {
-    const isPresent = appState.cartItems.some(item => item._id === book._id);
-    setInCart(isPresent);
-  }, [appState.cartItems]);
+    if (currentUser) {
+      if (isCartLoaded) {
+        const isPresent = cartItems.some(item => item.book._id === book._id);
+        setInCart(isPresent);
+      } else {
+        dispatch(CartThunks.getCartItems());
+      }
+    }
+  }, [currentUser, cartItems]);
 
   useEffect(() => {
     if (book) {
@@ -151,14 +162,12 @@ const BookDetail = () => {
   };
 
   const buyBook = () => {
-    const date = new Date();
     const cartItem = new CartItem({
-      ...book,
-      qtyOrdered: 1,
-      createdOn: date,
-      modifiedOn: date,
+      book: {...book},
+      quantity: 1,
+      price: book.price,
     });
-    navigate(`/buy`, {
+    navigate('/buy', {
       state: {
         cartItems: [cartItem],
         orderType: OrderTypes.BUY_NOW,
@@ -166,12 +175,8 @@ const BookDetail = () => {
     });
   };
 
-  const handleDialogClose = (fetchReviews = false) => {
+  const handleDialogClose = () => {
     setOpen(false);
-    if (fetchReviews) {
-      // TODO alisha: add reviews to store
-      // getBookReviews();
-    }
   };
 
   const navigateToCart = () => {
@@ -192,26 +197,26 @@ const BookDetail = () => {
       price: book.price,
       quantity: 1,
     });
-    appState.cartItems.forEach(item => {
+    cartItems.forEach(item => {
       if (item._id !== id) {
         orderDetails.push({
           bookId: item._id,
           price: item.price,
-          quantity: item.qtyOrdered,
+          quantity: item.quantity,
         });
       }
     });
-    axios
-      .patch(`${environment.API_URL}/cart`, {orderDetails})
+
+    dispatch(
+      CartThunks.updateCartItem({
+        type: ADD_ITEM_TO_CART,
+        id: book._id,
+        book: book,
+        orderDetails,
+      }),
+    )
+      .unwrap()
       .then(() => {
-        const item = new CartItem({
-          ...book,
-          qtyOrdered: 1,
-        });
-        dispatchAppAction({
-          type: APP_ACTIONS.UPDATE_CART,
-          data: {item, action: ADD_ITEM_TO_CART},
-        });
         navigateToCart();
       })
       .catch(err => console.log(err))

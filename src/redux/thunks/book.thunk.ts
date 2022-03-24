@@ -1,7 +1,8 @@
 import {createAsyncThunk} from '@reduxjs/toolkit';
+import axios from 'axios';
 import {batch} from 'react-redux';
 
-import axios from '../../core/axios';
+import appAxios from '../../core/axios';
 import environment from '../../Environment/environment';
 import {bookActions} from '../slices';
 
@@ -29,7 +30,7 @@ export const getBookById = createAsyncThunk(
   async (id: string, {dispatch, fulfillWithValue, rejectWithValue}) => {
     try {
       dispatch(bookActions.setLoading(true));
-      const {data} = await axios.get(`${environment.API_URL}/book/${id}`);
+      const {data} = await appAxios.get(`${environment.API_URL}/book/${id}`);
       batch(() => {
         dispatch(bookActions.addItem(data));
       });

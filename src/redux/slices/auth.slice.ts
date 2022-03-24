@@ -35,10 +35,8 @@ export const authSlice = createSlice({
       state.userEntryState = action.payload;
     },
     logout: state => {
-      const username = state.user.username;
-      state.user = null;
       TokenService.clearTokenPayload();
-      toast.success(`${username} logged out successfully`);
+      toast.success('Logout successful');
     },
   },
   extraReducers: builder =>
@@ -50,6 +48,12 @@ export const authSlice = createSlice({
         AuthThunks.updateUserInfo.fulfilled,
         (state, action: PayloadAction<any>) => {
           state.user = {...state.user, ...action.payload};
+        },
+      )
+      .addCase(
+        AuthThunks.addUserAddress.fulfilled,
+        (state, action: PayloadAction<any>) => {
+          state.user.addresses = [action.payload];
         },
       ),
 });

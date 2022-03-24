@@ -31,6 +31,9 @@ const orderSlice = createSlice({
     setLoaded: state => {
       state.isLoaded = true;
     },
+    refreshData: state => {
+      state.isLoaded = false;
+    },
   },
 });
 

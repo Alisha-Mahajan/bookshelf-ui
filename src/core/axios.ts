@@ -24,18 +24,19 @@ axiosInstance.interceptors.response.use(
   res => res,
   async error => {
     const originalConfig = error.config;
-    if (!['/login', '/signup'].includes(error.url) && error.response) {
+    if (!['/login', '/signup'].includes(originalConfig.url) && error.response) {
       // Access token expired
+      const oldRefreshToken = localStorage.getItem(REFRESH_TOKEN);
+
       if (
         error.response.status === 401 &&
-        error.response.data === 'TokenExpiredError' &&
-        !originalConfig._retry
+        !originalConfig._retry &&
+        oldRefreshToken
       ) {
         originalConfig._retry = true;
 
         try {
           // refresh token handling
-          const oldRefreshToken = localStorage.getItem(REFRESH_TOKEN);
           try {
             const response = await axios.post(
               `${environment.API_URL}/refresh`,

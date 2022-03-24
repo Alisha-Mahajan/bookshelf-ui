@@ -19,7 +19,7 @@ const combineReducer = combineReducers({
 });
 
 const rootReducer = (state, action: AnyAction) => {
-  if (['auth/logout/fulfilled', 'auth/logout/rejected'].includes(action.type)) {
+  if (action.type === 'auth/logout') {
     state = undefined;
   }
   return combineReducer(state, action);

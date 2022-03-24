@@ -1,4 +1,11 @@
-import {createContext, lazy, Suspense, useEffect, useReducer} from 'react';
+import {
+  createContext,
+  lazy,
+  Suspense,
+  useEffect,
+  useReducer,
+  useState,
+} from 'react';
 import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 
 import {
@@ -17,7 +24,6 @@ import styles from './App.module.scss';
 
 const initialAppState: IAppContext = {
   searchText: '',
-  cartItems: [],
 };
 
 export const AppContext = createContext(null);
@@ -62,8 +68,20 @@ function App() {
   );
 
   useEffect(() => {
-    dispatch(AuthThunks.refresh());
+    // added delay as sometimes if refresh fails books call is cancelled
+    setTimeout(() => {
+      dispatch(AuthThunks.refresh());
+    }, 10);
   }, []);
+
+  const [isAdmin, setAdmin] = useState(false);
+  useEffect(() => {
+    if (isAdmin && !currentUser?.isSuperAdmin) {
+      setAdmin(false);
+    } else if (currentUser?.isSuperAdmin) {
+      setAdmin(true);
+    }
+  }, currentUser);
 
   return (
     <Router>
@@ -75,9 +93,9 @@ function App() {
               <Routes>
                 <Route
                   path="/"
-                  element={currentUser?.isAdmin ? <AdminHome /> : <Dashboard />}
+                  element={isAdmin ? <AdminHome /> : <Dashboard />}
                 />
-                {currentUser?.isAdmin ? (
+                {isAdmin ? (
                   <>
                     <Route path="/users" element={<UserList />} />
                     <Route path="/books" element={<BookList />} />

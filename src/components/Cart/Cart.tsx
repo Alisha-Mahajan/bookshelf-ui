@@ -1,14 +1,7 @@
 import {Box, Button, Paper, Step, StepLabel, Stepper} from '@mui/material';
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useReducer,
-  useState,
-} from 'react';
+import {createContext, useEffect, useReducer, useState} from 'react';
 import {useLocation, useNavigate} from 'react-router-dom';
 
-import {AppContext} from '../../App/App';
 import {CartReducer, ICartContext} from '../../reducers';
 import {useAppSelector} from '../../redux';
 import {BookCartTile} from '../../shared/components';
@@ -24,7 +17,6 @@ const Cart = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const {appState} = useContext(AppContext);
   const currentUser = useAppSelector(state => state.auth.user);
   const initialState: ICartContext = {
     products: location.state.cartItems,
@@ -46,7 +38,7 @@ const Cart = () => {
   const processPayment = () => {
     let total = 0;
     cartState.products.forEach(pdt => {
-      total += pdt.qtyOrdered * pdt.price;
+      total += pdt.quantity * pdt.price;
     });
     navigate('/payment', {
       state: {
@@ -101,7 +93,7 @@ const Cart = () => {
                 {cartState.products.map(item => (
                   <BookCartTile
                     item={item}
-                    key={item.id}
+                    key={item.book._id}
                     qtyUpdate={(id, value) => qtyUpdate(id, value)}
                     showDelete={false}
                   />
